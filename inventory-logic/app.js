@@ -1,15 +1,19 @@
 require('dotenv').config(); // Load environment variables
 
 const express = require('express');
-const mongoose = require('mongoose'); // Import mongoose
+const mongoose = require('mongoose');
+const cors = require('cors'); // Import cors
 const app = express();
-const port = process.env.PORT || 3000; // Use PORT from .env
+const port = process.env.PORT || 3000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
 
+// Enable CORS for all routes
+app.use(cors());
+
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI) // Removed deprecated options
+mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('Could not connect to MongoDB', err));
 
