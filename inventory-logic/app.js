@@ -52,22 +52,17 @@ app.post('/products', async (req, res) => {
 // PUT: Update product details or stock
 app.put('/products/:codigo/:talla', async (req, res) => {
     const { codigo, talla } = req.params;
-    const { operation, stock, img_url1, img_url2 } = req.body; // Include new fields
+    const { precio, descripcion, precio_cs, stock, img_url1, img_url2 } = req.body; // Include all fields
     const product = await Product.findOne({ codigo, talla });
     if (product) {
-        if (operation === 'sell') {
-            if (product.stock >= stock) {
-                product.stock -= stock;
-            } else {
-                return res.status(400).send('Insufficient stock');
-            }
-        } else if (operation === 'add') {
-            product.stock += stock;
-        } else {
-            return res.status(400).send('Invalid operation');
-        }
-        product.img_url1 = img_url1; // Update image URL 1
-        product.img_url2 = img_url2; // Update image URL 2
+        // Update fields if they are provided in the request body
+        if (precio !== undefined) product.precio = precio;
+        if (descripcion !== undefined) product.descripcion = descripcion;
+        if (precio_cs !== undefined) product.precio_cs = precio_cs;
+        if (stock !== undefined) product.stock = stock;
+        if (img_url1 !== undefined) product.img_url1 = img_url1;
+        if (img_url2 !== undefined) product.img_url2 = img_url2;
+        
         await product.save();
         res.json(product);
     } else {
