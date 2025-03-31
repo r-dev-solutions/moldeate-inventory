@@ -39,22 +39,29 @@ const Product = mongoose.model('Product', productSchema);
 
 // POST: Add or update product stock
 app.post('/products', async (req, res) => {
-    const { precio, codigo, descripcion, precio_cs, talla, stock, img_url1, img_url2, img_url3, img_url4, img_url5 } = req.body;
-    let product = await Product.findOne({ codigo, talla });
-    if (product) {
-        product.stock += stock;
-        product.img_url1 = img_url1;
-        product.img_url2 = img_url2;
-        product.img_url3 = img_url3; // Handle new field
-        product.img_url4 = img_url4; // Handle new field
-        product.img_url5 = img_url5; // Handle new field
-        await product.save();
-        res.status(200).json(product);
-    } else {
-        product = new Product({ precio, codigo, descripcion, precio_cs, talla, stock, img_url1, img_url2, img_url3, img_url4, img_url5 });
-        await product.save();
-        res.status(201).json(product);
+    const products = req.body; // Expecting an array of products
+    const results = [];
+
+    for (const productData of products) {
+        const { precio, codigo, descripcion, precio_cs, talla, stock, img_url1, img_url2, img_url3, img_url4, img_url5 } = productData;
+        let product = await Product.findOne({ codigo, talla });
+        if (product) {
+            product.stock += stock;
+            product.img_url1 = img_url1;
+            product.img_url2 = img_url2;
+            product.img_url3 = img_url3; // Handle new field
+            product.img_url4 = img_url4; // Handle new field
+            product.img_url5 = img_url5; // Handle new field
+            await product.save();
+            results.push({ status: 'updated', product });
+        } else {
+            product = new Product({ precio, codigo, descripcion, precio_cs, talla, stock, img_url1, img_url2, img_url3, img_url4, img_url5 });
+            await product.save();
+            results.push({ status: 'created', product });
+        }
     }
+
+    res.status(200).json(results);
 });
 
 // PUT: Update product details or stock
