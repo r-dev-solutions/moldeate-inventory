@@ -40,29 +40,59 @@ const Product = mongoose.model('Product', productSchema);
 
 // POST: Add or update product stock
 app.post('/products', async (req, res) => {
-    const products = req.body; // Expecting an array of products
-    const results = [];
-
-    for (const productData of products) {
-        const { precio, codigo, descripcion, precio_cs, talla, stock, img_url1, img_url2, img_url3, img_url4, img_url5 } = productData;
-        let product = await Product.findOne({ codigo, talla });
-        if (product) {
-            product.stock += stock;
-            product.img_url1 = img_url1;
-            product.img_url2 = img_url2;
-            product.img_url3 = img_url3; // Handle new field
-            product.img_url4 = img_url4; // Handle new field
-            product.img_url5 = img_url5; // Handle new field
-            await product.save();
-            results.push({ status: 'updated', product });
-        } else {
-            product = new Product({ precio, codigo, descripcion, precio_cs, talla, stock, img_url1, img_url2, img_url3, img_url4, img_url5 });
-            await product.save();
-            results.push({ status: 'created', product });
+    try {
+        const products = req.body;
+        // Validate input
+        if (!Array.isArray(products)) {
+            return res.status(400).json({ error: 'Expected an array of products' });
         }
-    }
 
-    res.status(200).json(results);
+        const results = [];
+        for (const productData of products) {
+            // Validate required fields
+            if (!productData.codigo || !productData.talla) {
+                results.push({ status: 'error', message: 'Missing required fields' });
+                continue;
+            }
+
+            const { precio, codigo, descripcion, precio_cs, talla, stock, img_url1, img_url2, img_url3, img_url4, img_url5 } = productData;
+            let product = await Product.findOne({ codigo, talla });
+            
+            if (product) {
+                // Update existing product
+                product.stock += stock || 0;
+                product.img_url1 = img_url1 || product.img_url1;
+                product.img_url2 = img_url2 || product.img_url2;
+                product.img_url3 = img_url3 || product.img_url3;
+                product.img_url4 = img_url4 || product.img_url4;
+                product.img_url5 = img_url5 || product.img_url5;
+                await product.save();
+                results.push({ status: 'updated', product });
+            } else {
+                // Create new product
+                product = new Product({
+                    precio: precio || 0,
+                    codigo,
+                    descripcion: descripcion || '',
+                    precio_cs: precio_cs || 0,
+                    talla,
+                    stock: stock || 0,
+                    img_url1: img_url1 || '',
+                    img_url2: img_url2 || '',
+                    img_url3: img_url3 || '',
+                    img_url4: img_url4 || '',
+                    img_url5: img_url5 || '',
+                    location: productData.location || ''
+                });
+                await product.save();
+                results.push({ status: 'created', product });
+            }
+        }
+        res.status(200).json(results);
+    } catch (error) {
+        console.error('Error in POST /products:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
 });
 
 // PUT: Update product details or stock
@@ -121,5 +151,5 @@ app.delete('/products/all', async (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-    console.log(`API listening at https://moldeate-inventory.onrender.com`);
+    console.log(`API listening at http://localhost:${port}`);
 });
