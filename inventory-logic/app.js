@@ -41,10 +41,10 @@ const Product = mongoose.model('Product', productSchema);
 // POST: Add or update product stock
 app.post('/products', async (req, res) => {
     try {
-        const products = req.body;
-        // Validate input
+        let products = req.body;
+        // Convert single product to array if needed
         if (!Array.isArray(products)) {
-            return res.status(400).json({ error: 'Expected an array of products' });
+            products = [products];
         }
 
         const results = [];
