@@ -29,9 +29,10 @@ const productSchema = new mongoose.Schema({
     stock: Number,
     img_url1: String,
     img_url2: String,
-    img_url3: String, // New field for image URL 3
-    img_url4: String, // New field for image URL 4
-    img_url5: String  // New field for image URL 5
+    img_url3: String,
+    img_url4: String,
+    img_url5: String,
+    location: { type: String, enum: ['Casa', 'Tienda'], default: 'Tienda' } // New field
 });
 
 // Create a Product model
