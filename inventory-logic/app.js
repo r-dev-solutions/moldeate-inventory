@@ -141,13 +141,16 @@ app.delete('/products/:codigo', async (req, res) => {
 // DELETE: Remove all products
 app.delete('/products/all', async (req, res) => {
     try {
+        console.log('DELETE /products/all request received');
         const result = await Product.deleteMany({});
+        console.log('Delete result:', result);
         if (result.deletedCount > 0) {
             res.status(200).send(`${result.deletedCount} products deleted`);
         } else {
             res.status(404).send('No products found to delete');
         }
     } catch (error) {
+        console.error('Error in DELETE /products/all:', error);
         res.status(500).send('Error deleting products');
     }
 });
