@@ -32,7 +32,7 @@ const productSchema = new mongoose.Schema({
     img_url3: String,
     img_url4: String,
     img_url5: String,
-    location: { type: String, enum: ['Casa', 'Tienda'], default: 'Tienda' } // New field
+    location: { type: String, enum: ['Casa', 'Tienda'] } // Removed default value
 });
 
 // Create a Product model
