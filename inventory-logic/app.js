@@ -12,7 +12,10 @@ const port = process.env.PORT || 3001; // Change port to 3001
 app.use(express.json());
 
 // Enable CORS for all routes
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+}));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
