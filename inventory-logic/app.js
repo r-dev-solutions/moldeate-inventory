@@ -111,7 +111,7 @@ app.post('/products', async (req, res) => {
 app.put('/products/:codigo/:talla', async (req, res) => {
     try {
         const { codigo, talla } = req.params;
-        const { precio, descripcion, precio_cs, stock, img_url1, img_url2, img_url3, img_url4, img_url5 } = req.body;
+        const { precio, descripcion, precio_cs, stock, img_url1, img_url2, img_url3, img_url4, img_url5, location } = req.body;
         
         const product = await Product.findOne({ codigo, 'tallas.talla': talla });
         if (product) {
@@ -129,6 +129,7 @@ app.put('/products/:codigo/:talla', async (req, res) => {
             if (img_url3 !== undefined) product.img_url3 = img_url3;
             if (img_url4 !== undefined) product.img_url4 = img_url4;
             if (img_url5 !== undefined) product.img_url5 = img_url5;
+            if (location !== undefined) product.location = location;
 
             await product.save();
             res.json(product);
@@ -183,4 +184,28 @@ app.delete('/products/all', async (req, res) => {
 // Start the server
 app.listen(port, () => {
     console.log(`API listening at http://localhost:${port}`);
+});
+
+// PATCH: Update product location
+app.patch('/products/location/:codigo', async (req, res) => {
+    try {
+        const { codigo } = req.params;
+        const { location } = req.body;
+
+        if (!location) {
+            return res.status(400).json({ error: 'Location is required' });
+        }
+
+        const product = await Product.findOne({ codigo });
+        if (!product) {
+            return res.status(404).send('Product not found');
+        }
+
+        product.location = location;
+        await product.save();
+        res.json(product);
+    } catch (error) {
+        console.error('Error in PATCH /products/location/:codigo:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
