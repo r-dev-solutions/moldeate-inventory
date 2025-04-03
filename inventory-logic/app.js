@@ -121,5 +121,5 @@ app.delete('/products/all', async (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-    console.log(`API listening at http://localhost:${port}`);
+    console.log(`API listening at https://moldeate-inventory.onrender.com`);
 });
