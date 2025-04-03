@@ -105,6 +105,20 @@ app.delete('/products/:codigo', async (req, res) => {
     }
 });
 
+// DELETE: Remove all products
+app.delete('/products/all', async (req, res) => {
+    try {
+        const result = await Product.deleteMany({});
+        if (result.deletedCount > 0) {
+            res.status(200).send(`${result.deletedCount} products deleted`);
+        } else {
+            res.status(404).send('No products found to delete');
+        }
+    } catch (error) {
+        res.status(500).send('Error deleting products');
+    }
+});
+
 // Start the server
 app.listen(port, () => {
     console.log(`API listening at http://localhost:${port}`);
