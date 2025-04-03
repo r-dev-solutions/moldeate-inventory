@@ -75,6 +75,7 @@ app.post('/products', async (req, res) => {
                     product.img_url3 = img_url3 || product.img_url3;
                     product.img_url4 = img_url4 || product.img_url4;
                     product.img_url5 = img_url5 || product.img_url5;
+                    product.location = location || product.location; // Add this line to update location
                     await product.save();
                     results.push({ status: 'updated', product });
                 } else {
