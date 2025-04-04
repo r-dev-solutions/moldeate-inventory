@@ -47,14 +47,12 @@ const Product = mongoose.model('Product', productSchema);
 app.post('/products', async (req, res) => {
     try {
         let products = req.body;
-        // Convert single product to array if needed
         if (!Array.isArray(products)) {
             products = [products];
         }
 
         const results = [];
         for (const productData of products) {
-            // Validate required fields
             if (!productData.codigo || !productData.tallas) {
                 results.push({ status: 'error', message: 'Missing required fields' });
                 continue;
@@ -62,12 +60,16 @@ app.post('/products', async (req, res) => {
 
             const { precio, codigo, descripcion, precio_cs, tallas, img_url1, img_url2, img_url3, img_url4, img_url5, location } = productData;
             
-            // Process each talla
             for (const tallaData of tallas) {
-                let product = await Product.findOne({ codigo, 'tallas.talla': tallaData.talla });
+                // Check if product exists with same code AND location
+                let product = await Product.findOne({ 
+                    codigo, 
+                    'tallas.talla': tallaData.talla,
+                    location: location || ''
+                });
                 
-                if (product) {
-                    // Update existing product talla
+                if (product && product.location === (location || '')) {
+                    // Update existing product talla only if location matches
                     const tallaIndex = product.tallas.findIndex(t => t.talla === tallaData.talla);
                     product.tallas[tallaIndex].stock += tallaData.stock || 0;
                     product.img_url1 = img_url1 || product.img_url1;
@@ -75,7 +77,6 @@ app.post('/products', async (req, res) => {
                     product.img_url3 = img_url3 || product.img_url3;
                     product.img_url4 = img_url4 || product.img_url4;
                     product.img_url5 = img_url5 || product.img_url5;
-                    product.location = location || product.location; // Add this line to update location
                     await product.save();
                     results.push({ status: 'updated', product });
                 } else {
