@@ -60,46 +60,58 @@ app.post('/products', async (req, res) => {
 
             const { precio, codigo, descripcion, precio_cs, tallas, img_url1, img_url2, img_url3, img_url4, img_url5, location } = productData;
             
-            for (const tallaData of tallas) {
-                // Check if product exists with same code AND location
-                let product = await Product.findOne({ 
-                    codigo, 
-                    'tallas.talla': tallaData.talla,
+            // Check if product exists with same code AND location
+            let product = await Product.findOne({ 
+                codigo, 
+                location: location || ''
+            });
+            
+            if (product) {
+                // Update existing product
+                product.precio = precio || product.precio;
+                product.descripcion = descripcion || product.descripcion;
+                product.precio_cs = precio_cs || product.precio_cs;
+                product.img_url1 = img_url1 || product.img_url1;
+                product.img_url2 = img_url2 || product.img_url2;
+                product.img_url3 = img_url3 || product.img_url3;
+                product.img_url4 = img_url4 || product.img_url4;
+                product.img_url5 = img_url5 || product.img_url5;
+                
+                // Update or add tallas
+                for (const tallaData of tallas) {
+                    const tallaIndex = product.tallas.findIndex(t => t.talla === tallaData.talla);
+                    if (tallaIndex >= 0) {
+                        product.tallas[tallaIndex].stock += tallaData.stock || 0;
+                    } else {
+                        product.tallas.push({
+                            talla: tallaData.talla,
+                            stock: tallaData.stock || 0
+                        });
+                    }
+                }
+                
+                await product.save();
+                results.push({ status: 'updated', product });
+            } else {
+                // Create new product with tallas
+                product = new Product({
+                    precio: precio || 0,
+                    codigo,
+                    descripcion: descripcion || '',
+                    precio_cs: precio_cs || 0,
+                    tallas: tallas.map(t => ({
+                        talla: t.talla,
+                        stock: t.stock || 0
+                    })),
+                    img_url1: img_url1 || '',
+                    img_url2: img_url2 || '',
+                    img_url3: img_url3 || '',
+                    img_url4: img_url4 || '',
+                    img_url5: img_url5 || '',
                     location: location || ''
                 });
-                
-                if (product && product.location === (location || '')) {
-                    // Update existing product talla only if location matches
-                    const tallaIndex = product.tallas.findIndex(t => t.talla === tallaData.talla);
-                    product.tallas[tallaIndex].stock += tallaData.stock || 0;
-                    product.img_url1 = img_url1 || product.img_url1;
-                    product.img_url2 = img_url2 || product.img_url2;
-                    product.img_url3 = img_url3 || product.img_url3;
-                    product.img_url4 = img_url4 || product.img_url4;
-                    product.img_url5 = img_url5 || product.img_url5;
-                    await product.save();
-                    results.push({ status: 'updated', product });
-                } else {
-                    // Create new product with tallas
-                    product = new Product({
-                        precio: precio || 0,
-                        codigo,
-                        descripcion: descripcion || '',
-                        precio_cs: precio_cs || 0,
-                        tallas: tallas.map(t => ({
-                            talla: t.talla,
-                            stock: t.stock || 0
-                        })),
-                        img_url1: img_url1 || '',
-                        img_url2: img_url2 || '',
-                        img_url3: img_url3 || '',
-                        img_url4: img_url4 || '',
-                        img_url5: img_url5 || '',
-                        location: location || ''
-                    });
-                    await product.save();
-                    results.push({ status: 'created', product });
-                }
+                await product.save();
+                results.push({ status: 'created', product });
             }
         }
         res.status(200).json(results);
