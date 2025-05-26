@@ -29,6 +29,7 @@ const productSchema = new mongoose.Schema({
     descripcion: String,
     precio_cs: Number,
     costo: Number, // Add the new field "Costo"
+    costo_cs: Number, // Add the new field "Costo_cs"
     tallas: [{
         talla: String,
         stock: Number
